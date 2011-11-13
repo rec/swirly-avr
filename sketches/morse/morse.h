@@ -218,8 +218,10 @@ struct Parts {
   void measure(const char*);
   void measureWord(const char*);
 
-  static Parts getDefault();
-  static Parts getReferenceWordMeasure();
+
+
+
+
 };
 
 } // namespace morse
@@ -300,29 +302,56 @@ void Parts::measure(char c) {
     } while (!cp.isEnd());
   }
 }
-
-Parts Parts::getDefault() {
-  Parts p;
-
-  p.dot_ = 1;
-  p.dash_ = 3;
-  p.symbolGap_ = 1;
-  p.characterGap_ = 3;
-  p.wordGap_ = 7;
-
-  return p;
-}
-
-Parts Parts::getReferenceWordMeasure() {
-  Parts p;
-  p.measure("PARIS ");
-  return p;
-}
-
-
+# 74 "./src/swirly/morse/Parts.cpp"
 } // namespace morse
 } // namespace swirly
 # 3 "sketches/morse/morse.h.in" 2
+# 1 "./src/swirly/morse/ScaleToWPM.cpp" 1
+# 1 "./src/swirly/morse/ScaleToWPM.h" 1
+
+
+
+
+
+namespace swirly {
+namespace morse {
+
+Parts scaleToWPM(float wpm, const Parts& hand,
+                 const Parts& referenceWordMeasure);
+
+} // namespace morse
+} // namespace swirly
+# 2 "./src/swirly/morse/ScaleToWPM.cpp" 2
+
+
+namespace swirly {
+namespace morse {
+
+static int product(const Parts& x, const Parts& y) {
+  return
+    x.dash_ * y.dash_ +
+    x.dot_ * y.dot_ +
+    x.symbolGap_ * y.symbolGap_ +
+    x.characterGap_ * y.characterGap_ +
+    x.wordGap_ * y.wordGap_;
+}
+
+Parts scaleToWPM(float wpm, const Parts& hand, const Parts& referenceWord) {
+  Parts p = hand;
+  float scale = 60000.0 / product(hand, referenceWord);
+
+  p.dash_ *= scale;
+  p.dot_ *= scale;
+  p.symbolGap_ *= scale;
+  p.characterGap_ *= scale;
+  p.wordGap_ *= scale;
+
+  return p;
+}
+
+} // namespace morse
+} // namespace swirly
+# 4 "sketches/morse/morse.h.in" 2
 
 extern "C" void setup() {
 }

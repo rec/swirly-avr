@@ -1,5 +1,6 @@
 #include "swirly/morse/Character.cpp"
 #include "swirly/morse/Parts.cpp"
+#include "swirly/morse/ScaleToWPM.cpp"
 
 extern "C" void setup() {
 }
