@@ -1,10 +1,28 @@
+
+
+// #include <ctype.h>
+// #include <string.h>
+
+namespace swirly {
+namespace morse {
+
+// The definition of a single Morse character.
+struct Character {
+  // The actual ASCII character, in lower case.
+  char char_;
+
+  // A string of symbols from "-", "." and " " (for readability.)
+  const char* symbols_;
+};
+
+// Find a character definition, or return NULL.
+const Character* findCharacter(char ch);
+
+} // namespace morse
+} // namespace swirly
 // Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#ifndef __REC_BASE_ARRAYSIZE_H_
-#define __REC_BASE_ARRAYSIZE_H_
-
 // The arraysize(arr) macro returns the # of elements in an array arr.
 // The expression is a compile-time constant, and therefore can be
 // used in defining new arrays, for example.  If you use arraysize on
@@ -15,23 +33,16 @@
 // cases, you have to use the unsafe ARRAYSIZE_UNSAFE() macro below.  This is
 // due to a limitation in C++'s template system.  The limitation might
 // eventually be removed, but it hasn't happened yet.
-
 // This template function declaration is used in defining arraysize.
 // Note that the function doesn't need an implementation, as we only
 // use its type.
 template <typename TypeName, size_t N>
 char (&ArraySizeHelper(TypeName (&array)[N]))[N];
-
 // That gcc wants both of these prototypes seems mysterious. VC, for
 // its part, can't decide which to use (another mystery). Matching of
 // template overloads: the final frontier.
-#ifndef _MSC_VER
 template <typename TypeName, size_t N>
 char (&ArraySizeHelper(const TypeName (&array)[N]))[N];
-#endif
-
-#define arraysize(array) (sizeof(ArraySizeHelper(array)))
-
 // ARRAYSIZE_UNSAFE performs essentially the same calculation as arraysize,
 // but can be used on anonymous types or types defined inside
 // functions.  It's less safe than arraysize as it accepts some
@@ -68,9 +79,87 @@ char (&ArraySizeHelper(const TypeName (&array)[N]))[N];
 // size.  Since all our code has to go through a 32-bit compiler,
 // where a pointer is 4 bytes, this means all pointers to a type whose
 // size is 3 or greater than 4 will be (righteously) rejected.
-
-#define ARRAYSIZE_UNSAFE(a) \
-  ((sizeof(a) / sizeof(*(a))) / \
-   static_cast<size_t>(!(sizeof(a) % sizeof(*(a)))))
-
-#endif  // __REC_BASE_ARRAYSIZE_H_
+namespace swirly {
+namespace morse {
+static Character CHARACTERS[] = {
+  {'!', "- . - . - -"},
+  {'"', ". - . . - ."},
+  {'$', ". . . - . . -"},
+  {'&', ". - . . ."},
+  {'(', "- . - - ."},
+  {')', "- . - - . -"},
+  {'+', ". - . - ."},
+  {',', "- - . . - -"},
+  {'-', "- . . . . -"},
+  {'.', ". - . - . -"},
+  {'/', "- . . - ."},
+  {'0', "- - - - -"},
+  {'1', ". - - - -"},
+  {'2', ". . - - -"},
+  {'3', ". . . - -"},
+  {'4', ". . . . -"},
+  {'5', ". . . . ."},
+  {'6', "- . . . ."},
+  {'7', "- - . . ."},
+  {'8', "- - - . ."},
+  {'9', "- - - - ."},
+  {':', "- - - . . ."},
+  {';', "- . - . - ."},
+  {'=', "- . . . -"},
+  {'?', ". . - - . ."},
+  {'@', ". - - . - ."},
+  {'\'', ". - - - - ."},
+  {'_', ". . - - . -"},
+  {'a', ". -"},
+  {'b', "- . . ."},
+  {'c', "- . - ."},
+  {'d', "- . ."},
+  {'e', "."},
+  {'f', ". . - ."},
+  {'g', "- - ."},
+  {'h', ". . . ."},
+  {'i', ". ."},
+  {'j', ". - - -"},
+  {'k', "- . -"},
+  {'l', ". - . ."},
+  {'m', "- -"},
+  {'n', "- ."},
+  {'o', "- - -"},
+  {'p', ". - - ."},
+  {'q', "- - . -"},
+  {'r', ". - ."},
+  {'s', ". . ."},
+  {'t', "-"},
+  {'u', ". . -"},
+  {'v', ". . . -"},
+  {'w', ". - -"},
+  {'x', "- . . -"},
+  {'y', "- . - -"},
+  {'z', "- - . ."},
+};
+const Character* findCharacter(char ch) {
+  ch = tolower(cg);
+  const Character* begin = CHARACTERS;
+  const Character* end = CHARACTERS + (sizeof(ArraySizeHelper(CHARACTERS)));
+  if (begin->char_ < ch || end->char_ > ch)
+    return NULL;
+  while (true) {
+    if (begin->char_ == ch)
+      return begin;
+    if (end->char_ == ch)
+      return end;
+    const Character* diff = begin + (end - begin) / 2;
+    if (diff == begin || diff == end)
+      return NULL;
+    if (diff->char_ < ch)
+      begin = diff;
+    else
+      end = diff;
+  }
+}
+} // namespace morse
+} // namespace swirly
+void setup() {
+}
+void loop() {
+}

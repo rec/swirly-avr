@@ -7,24 +7,10 @@
 namespace swirly {
 namespace morse {
 
-// The definition of a single Morse character.
-struct Character {
-  // The actual ASCII character, in lower case.
-  char char_;
 
-  // A string of symbols from "-", "." and " " (for readability.)
-  const char* symbols_;
-};
-
-// Find a character definition, or return NULL.
-const Character* findCharacter(char ch);
-
-struct Timing {
-  float scale_;  // Overall time scale.
-
-  // All times are in milliseconds.
-  int dash_;  // Time length of a dash.
-  int dot_;  // Length of a dot.
+struct Parts {
+  int dash_;
+  int dot_;
   int symbolGap_;  // Gap between a dot and a dash
   int characterGap_;  // Gap between two characters.
   int wordGap_;  // Gap between two words.
