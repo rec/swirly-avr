@@ -207,7 +207,16 @@ struct Parts {
   typedef int Parts::*Pointer;
 
   // Get a pointer to a part.
-  static Pointer getPart(const CharacterPosition&, bool isEndOfWord = false);
+  static Pointer getPart(const CharacterPosition&);
+
+  // Clear all parts.
+  void clear();
+
+  // Return the total number of parts in a character, a string, or a string that
+  // represents one word.
+  void measure(char);
+  void measure(const char*);
+  void measureWord(const char*);
 };
 
 } // namespace morse
@@ -241,7 +250,7 @@ struct CharacterPosition {
   int length() const { return char_->length(); }
   bool isDot() const { return get() == '.'; }
   bool isDash() const { return get() == '-'; }
-  bool isEnd() const { return pos_ >= (length() - 1); }
+  bool isEnd() const { return !get(); }
 };
 
 } // namespace morse
@@ -261,10 +270,32 @@ Parts::Pointer getPart(const CharacterPosition& cp, bool isEndOfWord) {
   if (!cp.isEnd())
     return &Parts::symbolGap_;
 
-  if (isEndOfWord)
-    return &Parts::wordGap_;
-
   return &Parts::characterGap_;
+}
+
+void Parts::clear() {
+  dash_ = dot_ = symbolGap_ = characterGap_ = wordGap_ = 0;
+}
+
+void Parts::measure(const char* s) {
+  for (; *s; ++s)
+    measure(*s);
+}
+
+void Parts::measureWord(const char* s) {
+  measure(s);
+  symbolGap_--;
+  wordGap_++;
+}
+
+void Parts::measure(char c) {
+  if (const Character* ch = Character::find(c)) {
+    CharacterPosition cp(ch);
+    do {
+      ++(this->*Parts::getPart(cp));
+      cp.pos_++;
+    } while (!cp.isEnd());
+  }
 }
 
 } // namespace morse

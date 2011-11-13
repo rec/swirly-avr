@@ -17,7 +17,16 @@ struct Parts {
   typedef int Parts::*Pointer;
 
   // Get a pointer to a part.
-  static Pointer getPart(const CharacterPosition&, bool isEndOfWord = false);
+  static Pointer getPart(const CharacterPosition&);
+
+  // Clear all parts.
+  void clear();
+
+  // Return the total number of parts in a character, a string, or a string that
+  // represents one word.
+  void measure(char);
+  void measure(const char*);
+  void measureWord(const char*);
 };
 
 }  // namespace morse

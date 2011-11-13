@@ -25,7 +25,7 @@ struct CharacterPosition {
   int length() const { return char_->length(); }
   bool isDot() const { return get() == '.'; }
   bool isDash() const { return get() == '-'; }
-  bool isEnd() const { return pos_ >= (length() - 1); }
+  bool isEnd() const { return !get(); }
 };
 
 }  // namespace morse
