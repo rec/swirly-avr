@@ -11,10 +11,10 @@ struct Character {
 
   // A string of symbols from "-", "." and " " (for readability.)
   const char* symbols_;
-};
 
-// Find a character definition, or return NULL.
-const Character* findCharacter(char ch);
+  int length() const { return strlen(symbols_); }
+  static const Character* find(char ch);
+};
 
 }  // namespace morse
 }  // namespace swirly

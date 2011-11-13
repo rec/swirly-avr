@@ -11,6 +11,6 @@ all: $(TARGETS)
 clean:
 	rm $(TARGETS)
 
-%.h: %.h.in
+%.h: %.h.in src/*/*/*.h src/*/*/*.cpp
 	$(PREPROCESS) $< -o $@
 

@@ -1,6 +1,3 @@
-// #include <ctype.h>
-// #include <string.h>
-
 #include "swirly/morse/Character.h"
 #include "swirly/base/ArraySize.h"
 
@@ -64,7 +61,7 @@ static Character CHARACTERS[] = {
   {'z', "- - . ."},
 };
 
-const Character* findCharacter(char ch) {
+const Character* Character::find(char ch) {
   ch = tolower(ch);
   const Character* begin = CHARACTERS;
   const Character* end = CHARACTERS + arraysize(CHARACTERS);
@@ -74,11 +71,14 @@ const Character* findCharacter(char ch) {
   while (true) {
     if (begin->char_ == ch)
       return begin;
+
     if (end->char_ == ch)
       return end;
+
     const Character* diff = begin + (end - begin) / 2;
     if (diff == begin || diff == end)
       return NULL;
+
     if (diff->char_ < ch)
       begin = diff;
     else

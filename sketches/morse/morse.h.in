@@ -1,4 +1,5 @@
 #include "swirly/morse/Character.cpp"
+#include "swirly/morse/Parts.cpp"
 
 extern "C" void setup() {
 }
