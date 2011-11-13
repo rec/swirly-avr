@@ -1,7 +1,0 @@
-#include "swirly/morse/Character.cpp"
-
-void setup() {
-}
-
-void loop() {
-}

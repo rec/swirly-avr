@@ -65,7 +65,7 @@ static Character CHARACTERS[] = {
 };
 
 const Character* findCharacter(char ch) {
-  ch = tolower(cg);
+  ch = tolower(ch);
   const Character* begin = CHARACTERS;
   const Character* end = CHARACTERS + arraysize(CHARACTERS);
   if (begin->char_ < ch || end->char_ > ch)

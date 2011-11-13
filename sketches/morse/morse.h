@@ -1,7 +1,14 @@
-
-
+# 1 "sketches/morse/morse.h.in"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 "sketches/morse/morse.h.in"
+# 1 "./src/swirly/morse/Character.cpp" 1
 // #include <ctype.h>
 // #include <string.h>
+
+# 1 "./src/swirly/morse/Character.h" 1
+
+
 
 namespace swirly {
 namespace morse {
@@ -20,9 +27,15 @@ const Character* findCharacter(char ch);
 
 } // namespace morse
 } // namespace swirly
+# 5 "./src/swirly/morse/Character.cpp" 2
+# 1 "./src/swirly/base/ArraySize.h" 1
 // Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+
+
+
 // The arraysize(arr) macro returns the # of elements in an array arr.
 // The expression is a compile-time constant, and therefore can be
 // used in defining new arrays, for example.  If you use arraysize on
@@ -33,16 +46,23 @@ const Character* findCharacter(char ch);
 // cases, you have to use the unsafe ARRAYSIZE_UNSAFE() macro below.  This is
 // due to a limitation in C++'s template system.  The limitation might
 // eventually be removed, but it hasn't happened yet.
+
 // This template function declaration is used in defining arraysize.
 // Note that the function doesn't need an implementation, as we only
 // use its type.
 template <typename TypeName, size_t N>
 char (&ArraySizeHelper(TypeName (&array)[N]))[N];
+
 // That gcc wants both of these prototypes seems mysterious. VC, for
 // its part, can't decide which to use (another mystery). Matching of
 // template overloads: the final frontier.
+
 template <typename TypeName, size_t N>
 char (&ArraySizeHelper(const TypeName (&array)[N]))[N];
+
+
+
+
 // ARRAYSIZE_UNSAFE performs essentially the same calculation as arraysize,
 // but can be used on anonymous types or types defined inside
 // functions.  It's less safe than arraysize as it accepts some
@@ -79,8 +99,11 @@ char (&ArraySizeHelper(const TypeName (&array)[N]))[N];
 // size.  Since all our code has to go through a 32-bit compiler,
 // where a pointer is 4 bytes, this means all pointers to a type whose
 // size is 3 or greater than 4 will be (righteously) rejected.
+# 6 "./src/swirly/morse/Character.cpp" 2
+
 namespace swirly {
 namespace morse {
+
 static Character CHARACTERS[] = {
   {'!', "- . - . - -"},
   {'"', ". - . . - ."},
@@ -137,12 +160,14 @@ static Character CHARACTERS[] = {
   {'y', "- . - -"},
   {'z', "- - . ."},
 };
+
 const Character* findCharacter(char ch) {
-  ch = tolower(cg);
+  ch = tolower(ch);
   const Character* begin = CHARACTERS;
   const Character* end = CHARACTERS + (sizeof(ArraySizeHelper(CHARACTERS)));
   if (begin->char_ < ch || end->char_ > ch)
     return NULL;
+
   while (true) {
     if (begin->char_ == ch)
       return begin;
@@ -157,9 +182,13 @@ const Character* findCharacter(char ch) {
       end = diff;
   }
 }
+
 } // namespace morse
 } // namespace swirly
-void setup() {
+# 2 "sketches/morse/morse.h.in" 2
+
+extern "C" void setup() {
 }
-void loop() {
+
+extern "C" void loop() {
 }

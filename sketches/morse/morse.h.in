@@ -1,0 +1,7 @@
+#include "swirly/morse/Character.cpp"
+
+extern "C" void setup() {
+}
+
+extern "C" void loop() {
+}
