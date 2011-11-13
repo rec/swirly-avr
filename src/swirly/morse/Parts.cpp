@@ -42,5 +42,24 @@ void Parts::measure(char c) {
   }
 }
 
+Parts Parts::getDefault() {
+  Parts p;
+
+  p.dot_ = 1;
+  p.dash_ = 3;
+  p.symbolGap_ = 1;
+  p.characterGap_ = 3;
+  p.wordGap_ = 7;
+
+  return p;
+}
+
+Parts Parts::getReferenceWordMeasure() {
+  Parts p;
+  p.measure("PARIS ");
+  return p;
+}
+
+
 }  // namespace morse
 }  // namespace swirly
