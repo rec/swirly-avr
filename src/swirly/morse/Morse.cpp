@@ -6,6 +6,25 @@
 
 #define EMULATION_MODE
 
+enum Constants {
+  LOW = 0,
+  HIGH = 1,
+  INPUT = 2,
+  OUTPUT = 3,
+};
+
+void pinMode(int pin, int mode) {
+  std::cout << "pinMode " << pin << " = " << mode << "\n";
+}
+
+int digitalRead(int pin ) {
+  std::cout << "digitalRead " << pin << "\n";
+}
+
+int digitalWrite(int pin, int value) {
+  std::cout << "digitalRead " << pin << " = " << value << "\n";
+}
+
 #include "morse/morse.h"
 
 namespace swirly {
