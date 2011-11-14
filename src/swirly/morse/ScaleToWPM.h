@@ -6,7 +6,7 @@
 namespace swirly {
 namespace morse {
 
-Parts scaleToWPM(float wpm, const Parts& hand,
+float scaleToWPM(float wpm, const Parts& hand,
                  const Parts& referenceWordMeasure);
 
 }  // namespace morse

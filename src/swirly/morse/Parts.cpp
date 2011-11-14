@@ -4,7 +4,10 @@
 namespace swirly {
 namespace morse {
 
-Parts::Pointer getPart(char ch) {
+// Points to a member of Parts.
+typedef int Parts::*PartPointer;
+
+PartPointer getPartPointer(char ch) {
   if (ch == '.')
     return &Parts::dot_;
 
@@ -16,6 +19,14 @@ Parts::Pointer getPart(char ch) {
 
   else
     return &Parts::characterGap_;
+}
+
+int* Parts::getPart(char ch) {
+  return &(this->*getPartPointer(ch));
+}
+
+const int* Parts::getPart(char ch) const {
+  return &(this->*getPartPointer(ch));
 }
 
 void Parts::clear() {
@@ -37,7 +48,7 @@ void Parts::measureWord(const char* s) {
 void Parts::measure(char c) {
   const char* s = symbolString(c);
   do {
-    (this->*Parts::getPart(*s))++;
+    (*getPart(*s))++;
   } while (*(s++));
 }
 

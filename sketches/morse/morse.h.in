@@ -3,8 +3,5 @@
 #include "swirly/morse/ScaleToWPM.cpp"
 #include "swirly/morse/SymbolString.cpp"
 
-extern "C" void setup() {
-}
+const char* message = "Hello JoMar";
 
-extern "C" void loop() {
-}

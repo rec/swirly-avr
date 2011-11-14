@@ -7,9 +7,8 @@
 namespace swirly {
 namespace morse {
 
-class Player {
- public:
-  Player(const char* s, const Parts& t) : message_(s), timing_(t) {}
+struct Player {
+  Player(const char* msg) : message_(msg) { start(); }
 
   void start() {
     isOn_ = true;
@@ -17,25 +16,21 @@ class Player {
     symbol_ = symbolString(*character_);
   }
 
-  int getTime() const {
-    return timing_.*Parts::getPart(*symbol_);
+  int getTime(const Parts& timing) const {
+    return *(timing.getPart(*symbol_));
   }
-
-  bool isOn() const { return isOn_; }
-  bool atEnd() const { return !*character_; }
 
   void advance() {
     isOn_ = !isOn_;
-    if (!*(symbol_++)) {
+    if (*symbol_) {
+      symbol_++;
+    } else if (*character_) {
       ++character_;
       symbol_ = symbolString(*character_);
+    } else {
+      start();
     }
   }
-
-  Parts* timing() { return &timing_; }
-
- private:
-  Parts timing_;
 
   bool isOn_;
   const char* message_;

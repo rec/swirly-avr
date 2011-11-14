@@ -17,11 +17,9 @@ struct Parts {
   int characterGap_; // Gap between two characters.
   int wordGap_; // Gap between two words.
 
-  // Points to a member of Parts.
-  typedef int Parts::*Pointer;
-
   // Get a pointer to a part.
-  static Pointer getPart(const char ch);
+  int* getPart(char);
+  const int* getPart(char) const;
 
   // Clear all parts.
   void clear();
@@ -59,7 +57,10 @@ const char* symbolString(char);
 namespace swirly {
 namespace morse {
 
-Parts::Pointer getPart(char ch) {
+// Points to a member of Parts.
+typedef int Parts::*PartPointer;
+
+PartPointer getPartPointer(char ch) {
   if (ch == '.')
     return &Parts::dot_;
 
@@ -71,6 +72,14 @@ Parts::Pointer getPart(char ch) {
 
   else
     return &Parts::characterGap_;
+}
+
+int* Parts::getPart(char ch) {
+  return &(this->*getPartPointer(ch));
+}
+
+const int* Parts::getPart(char ch) const {
+  return &(this->*getPartPointer(ch));
 }
 
 void Parts::clear() {
@@ -92,10 +101,10 @@ void Parts::measureWord(const char* s) {
 void Parts::measure(char c) {
   const char* s = symbolString(c);
   do {
-    (this->*Parts::getPart(*s))++;
+    (*getPart(*s))++;
   } while (*(s++));
 }
-# 74 "./src/swirly/morse/Parts.cpp"
+# 85 "./src/swirly/morse/Parts.cpp"
 } // namespace morse
 } // namespace swirly
 # 2 "sketches/morse/morse.h.in" 2
@@ -109,9 +118,8 @@ void Parts::measure(char c) {
 namespace swirly {
 namespace morse {
 
-class Player {
- public:
-  Player(const char* s, const Parts& t) : message_(s), timing_(t) {}
+struct Player {
+  Player(const char* msg) : message_(msg) { start(); }
 
   void start() {
     isOn_ = true;
@@ -119,25 +127,21 @@ class Player {
     symbol_ = symbolString(*character_);
   }
 
-  int getTime() const {
-    return timing_.*Parts::getPart(*symbol_);
+  int getTime(const Parts& timing) const {
+    return *(timing.getPart(*symbol_));
   }
-
-  bool isOn() const { return isOn_; }
-  bool atEnd() const { return !*character_; }
 
   void advance() {
     isOn_ = !isOn_;
-    if (!*(symbol_++)) {
+    if (*symbol_) {
+      symbol_++;
+    } else if (*character_) {
       ++character_;
       symbol_ = symbolString(*character_);
+    } else {
+      start();
     }
   }
-
-  Parts* timing() { return &timing_; }
-
- private:
-  Parts timing_;
 
   bool isOn_;
   const char* message_;
@@ -159,7 +163,7 @@ class Player {
 namespace swirly {
 namespace morse {
 
-Parts scaleToWPM(float wpm, const Parts& hand,
+float scaleToWPM(float wpm, const Parts& hand,
                  const Parts& referenceWordMeasure);
 
 } // namespace morse
@@ -170,6 +174,11 @@ Parts scaleToWPM(float wpm, const Parts& hand,
 namespace swirly {
 namespace morse {
 
+static const float MILLISECONDS_PER_SECOND = 1000.0;
+static const float SECONDS_PER_MINUTE = 60.0;
+static const float MILLISECONDS_PER_MINUTE =
+  MILLISECONDS_PER_MINUTE * SECONDS_PER_MINUTE;
+
 static int product(const Parts& x, const Parts& y) {
   return
     x.dash_ * y.dash_ +
@@ -179,17 +188,8 @@ static int product(const Parts& x, const Parts& y) {
     x.wordGap_ * y.wordGap_;
 }
 
-Parts scaleToWPM(float wpm, const Parts& hand, const Parts& referenceWord) {
-  Parts p = hand;
-  float scale = 60000.0 / product(hand, referenceWord);
-
-  p.dash_ *= scale;
-  p.dot_ *= scale;
-  p.symbolGap_ *= scale;
-  p.characterGap_ *= scale;
-  p.wordGap_ *= scale;
-
-  return p;
+float scaleToWPM(float wpm, const Parts& hand, const Parts& referenceWord) {
+  return MILLISECONDS_PER_MINUTE / product(hand, referenceWord);
 }
 
 } // namespace morse
@@ -372,8 +372,4 @@ const char* symbolString(char ch) {
 } // namespace swirly
 # 5 "sketches/morse/morse.h.in" 2
 
-extern "C" void setup() {
-}
-
-extern "C" void loop() {
-}
+const char* message = "Hello JoMar";

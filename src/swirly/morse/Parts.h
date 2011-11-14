@@ -11,11 +11,9 @@ struct Parts {
   int characterGap_;  // Gap between two characters.
   int wordGap_;  // Gap between two words.
 
-  // Points to a member of Parts.
-  typedef int Parts::*Pointer;
-
   // Get a pointer to a part.
-  static Pointer getPart(const char ch);
+  int* getPart(char);
+  const int* getPart(char) const;
 
   // Clear all parts.
   void clear();

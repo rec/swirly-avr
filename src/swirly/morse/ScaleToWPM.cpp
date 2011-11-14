@@ -4,6 +4,11 @@
 namespace swirly {
 namespace morse {
 
+static const float MILLISECONDS_PER_SECOND = 1000.0;
+static const float SECONDS_PER_MINUTE = 60.0;
+static const float MILLISECONDS_PER_MINUTE =
+  MILLISECONDS_PER_MINUTE * SECONDS_PER_MINUTE;
+
 static int product(const Parts& x, const Parts& y) {
   return
     x.dash_ * y.dash_ +
@@ -13,17 +18,8 @@ static int product(const Parts& x, const Parts& y) {
     x.wordGap_ * y.wordGap_;
 }
 
-Parts scaleToWPM(float wpm, const Parts& hand, const Parts& referenceWord) {
-  Parts p = hand;
-  float scale = 60000.0 / product(hand, referenceWord);
-
-  p.dash_ *= scale;
-  p.dot_ *= scale;
-  p.symbolGap_ *= scale;
-  p.characterGap_ *= scale;
-  p.wordGap_ *= scale;
-
-  return p;
+float scaleToWPM(float wpm, const Parts& hand, const Parts& referenceWord) {
+  return MILLISECONDS_PER_MINUTE / product(hand, referenceWord);
 }
 
 }  // namespace morse
