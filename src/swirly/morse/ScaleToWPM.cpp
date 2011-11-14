@@ -7,7 +7,7 @@ namespace morse {
 static const float MILLISECONDS_PER_SECOND = 1000.0;
 static const float SECONDS_PER_MINUTE = 60.0;
 static const float MILLISECONDS_PER_MINUTE =
-  MILLISECONDS_PER_MINUTE * SECONDS_PER_MINUTE;
+  MILLISECONDS_PER_SECOND * SECONDS_PER_MINUTE;
 
 static int product(const Parts& x, const Parts& y) {
   return
@@ -19,7 +19,8 @@ static int product(const Parts& x, const Parts& y) {
 }
 
 float scaleToWPM(float wpm, const Parts& hand, const Parts& referenceWord) {
-  return MILLISECONDS_PER_MINUTE / product(hand, referenceWord);
+  int prod = product(hand, referenceWord);
+  return MILLISECONDS_PER_MINUTE / (prod * wpm);
 }
 
 }  // namespace morse

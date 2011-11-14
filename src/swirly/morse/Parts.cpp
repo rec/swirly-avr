@@ -66,7 +66,10 @@ Parts Parts::getDefault() {
 
 Parts Parts::getReferenceWordMeasure() {
   Parts p;
-  p.measure("PARIS ");
+
+  p.clear();
+  p.measureWord("PARIS");
+
   return p;
 }
 

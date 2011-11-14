@@ -117,7 +117,10 @@ Parts Parts::getDefault() {
 
 Parts Parts::getReferenceWordMeasure() {
   Parts p;
-  p.measure("PARIS ");
+
+  p.clear();
+  p.measureWord("PARIS");
+
   return p;
 }
 
@@ -216,7 +219,7 @@ namespace morse {
 
 class PlayerTimer {
  public:
-  PlayerTimer(const char* m, float wpm = 20.0)
+  PlayerTimer(const char* m, float wpm = 10.0)
       : player_(m), timing_(Parts::getDefault()) {
     setWPM(wpm);
   }
@@ -255,7 +258,7 @@ namespace morse {
 static const float MILLISECONDS_PER_SECOND = 1000.0;
 static const float SECONDS_PER_MINUTE = 60.0;
 static const float MILLISECONDS_PER_MINUTE =
-  MILLISECONDS_PER_MINUTE * SECONDS_PER_MINUTE;
+  MILLISECONDS_PER_SECOND * SECONDS_PER_MINUTE;
 
 static int product(const Parts& x, const Parts& y) {
   return
@@ -267,7 +270,8 @@ static int product(const Parts& x, const Parts& y) {
 }
 
 float scaleToWPM(float wpm, const Parts& hand, const Parts& referenceWord) {
-  return MILLISECONDS_PER_MINUTE / product(hand, referenceWord);
+  int prod = product(hand, referenceWord);
+  return MILLISECONDS_PER_MINUTE / (prod * wpm);
 }
 
 } // namespace morse
@@ -424,8 +428,8 @@ Character CHARACTERS[] = {
 const char* symbolString(char ch) {
   ch = tolower(ch);
   const Character* begin = CHARACTERS;
-  const Character* end = CHARACTERS + (sizeof(ArraySizeHelper(CHARACTERS)));
-  if (begin->char_ < ch || end->char_ > ch)
+  const Character* end = CHARACTERS + (sizeof(ArraySizeHelper(CHARACTERS))) - 1;
+  if (begin->char_ > ch || end->char_ < ch)
     return "";
 
   while (true) {

@@ -77,8 +77,8 @@ Character CHARACTERS[] = {
 const char* symbolString(char ch) {
   ch = tolower(ch);
   const Character* begin = CHARACTERS;
-  const Character* end = CHARACTERS + arraysize(CHARACTERS);
-  if (begin->char_ < ch || end->char_ > ch)
+  const Character* end = CHARACTERS + arraysize(CHARACTERS) - 1;
+  if (begin->char_ > ch || end->char_ < ch)
     return "";
 
   while (true) {

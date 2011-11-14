@@ -11,7 +11,7 @@ namespace morse {
 
 class PlayerTimer {
  public:
-  PlayerTimer(const char* m, float wpm = 20.0)
+  PlayerTimer(const char* m, float wpm = 10.0)
       : player_(m), timing_(Parts::getDefault()) {
     setWPM(wpm);
   }
