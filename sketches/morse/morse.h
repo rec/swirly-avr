@@ -222,7 +222,7 @@ class PlayerTimer {
   }
 
   void setWPM(float wpm) {
-    static Parts ref = Parts::getReferenceWordMeasure();
+    Parts ref = Parts::getReferenceWordMeasure();
     scale_ = scaleToWPM(wpm, timing_, ref);
   }
 
@@ -230,7 +230,7 @@ class PlayerTimer {
     player_.advance();
   }
 
-  int getTiming() {
+  int delay() {
     return static_cast<int>(scale_ * (*timing_.getPart(player_.symbol())));
   }
 
