@@ -1,6 +1,7 @@
-#include "swirly/morse/SymbolString.cpp"
 #include "swirly/morse/Parts.cpp"
+#include "swirly/morse/Player.h"
 #include "swirly/morse/ScaleToWPM.cpp"
+#include "swirly/morse/SymbolString.cpp"
 
 extern "C" void setup() {
 }

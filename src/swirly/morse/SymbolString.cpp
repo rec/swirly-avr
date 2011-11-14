@@ -74,7 +74,7 @@ Character CHARACTERS[] = {
 
 }  // namespace
 
-const char* findSymbolString(char ch) {
+const char* symbolString(char ch) {
   ch = tolower(ch);
   const Character* begin = CHARACTERS;
   const Character* end = CHARACTERS + arraysize(CHARACTERS);

@@ -6,7 +6,7 @@ namespace morse {
 
 // Finds the symbol string corresponding to the Morse character, or the empty
 // string if it is not a valid Morse.
-const char* findSymbolString(char);
+const char* symbolString(char);
 
 }  // namespace morse
 }  // namespace swirly

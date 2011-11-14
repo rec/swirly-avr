@@ -2,7 +2,45 @@
 # 1 "<built-in>"
 # 1 "<command-line>"
 # 1 "sketches/morse/morse.h.in"
-# 1 "./src/swirly/morse/SymbolString.cpp" 1
+# 1 "./src/swirly/morse/Parts.cpp" 1
+# 1 "./src/swirly/morse/Parts.h" 1
+
+
+
+namespace swirly {
+namespace morse {
+
+struct Parts {
+  int dash_;
+  int dot_;
+  int symbolGap_; // Gap between a dot and a dash
+  int characterGap_; // Gap between two characters.
+  int wordGap_; // Gap between two words.
+
+  // Points to a member of Parts.
+  typedef int Parts::*Pointer;
+
+  // Get a pointer to a part.
+  static Pointer getPart(const char ch);
+
+  // Clear all parts.
+  void clear();
+
+  // Return the total number of parts in a character, a string, or a string that
+  // represents one word.
+  void measure(char);
+  void measure(const char*);
+  void measureWord(const char*);
+
+
+
+
+
+};
+
+} // namespace morse
+} // namespace swirly
+# 2 "./src/swirly/morse/Parts.cpp" 2
 # 1 "./src/swirly/morse/SymbolString.h" 1
 
 
@@ -12,11 +50,153 @@ namespace morse {
 
 // Finds the symbol string corresponding to the Morse character, or the empty
 // string if it is not a valid Morse.
-const char* findSymbolString(char);
+const char* symbolString(char);
 
 } // namespace morse
 } // namespace swirly
-# 2 "./src/swirly/morse/SymbolString.cpp" 2
+# 3 "./src/swirly/morse/Parts.cpp" 2
+
+namespace swirly {
+namespace morse {
+
+Parts::Pointer getPart(char ch) {
+  if (ch == '.')
+    return &Parts::dot_;
+
+  if (ch == '-')
+    return &Parts::dash_;
+
+  if (ch)
+    return &Parts::symbolGap_;
+
+  else
+    return &Parts::characterGap_;
+}
+
+void Parts::clear() {
+  dash_ = dot_ = symbolGap_ = characterGap_ = wordGap_ = 0;
+}
+
+void Parts::measure(const char* s) {
+  for (; *s; ++s)
+    measure(*s);
+}
+
+void Parts::measureWord(const char* s) {
+  measure(s);
+
+  symbolGap_--;
+  wordGap_++;
+}
+
+void Parts::measure(char c) {
+  const char* s = symbolString(c);
+  do {
+    (this->*Parts::getPart(*s))++;
+  } while (*(s++));
+}
+# 74 "./src/swirly/morse/Parts.cpp"
+} // namespace morse
+} // namespace swirly
+# 2 "sketches/morse/morse.h.in" 2
+# 1 "./src/swirly/morse/Player.h" 1
+
+
+
+
+
+
+namespace swirly {
+namespace morse {
+
+class Player {
+ public:
+  Player(const char* s, const Parts& t) : message_(s), timing_(t) {}
+
+  void start() {
+    isOn_ = true;
+    character_ = message_;
+    symbol_ = symbolString(*character_);
+  }
+
+  int getTime() const {
+    return timing_.*Parts::getPart(*symbol_);
+  }
+
+  bool isOn() const { return isOn_; }
+  bool atEnd() const { return !*character_; }
+
+  void advance() {
+    isOn_ = !isOn_;
+    if (!*(symbol_++)) {
+      ++character_;
+      symbol_ = symbolString(*character_);
+    }
+  }
+
+  Parts* timing() { return &timing_; }
+
+ private:
+  Parts timing_;
+
+  bool isOn_;
+  const char* message_;
+  const char* character_;
+  const char* symbol_;
+};
+
+
+} // namespace morse
+} // namespace swirly
+# 3 "sketches/morse/morse.h.in" 2
+# 1 "./src/swirly/morse/ScaleToWPM.cpp" 1
+# 1 "./src/swirly/morse/ScaleToWPM.h" 1
+
+
+
+
+
+namespace swirly {
+namespace morse {
+
+Parts scaleToWPM(float wpm, const Parts& hand,
+                 const Parts& referenceWordMeasure);
+
+} // namespace morse
+} // namespace swirly
+# 2 "./src/swirly/morse/ScaleToWPM.cpp" 2
+
+
+namespace swirly {
+namespace morse {
+
+static int product(const Parts& x, const Parts& y) {
+  return
+    x.dash_ * y.dash_ +
+    x.dot_ * y.dot_ +
+    x.symbolGap_ * y.symbolGap_ +
+    x.characterGap_ * y.characterGap_ +
+    x.wordGap_ * y.wordGap_;
+}
+
+Parts scaleToWPM(float wpm, const Parts& hand, const Parts& referenceWord) {
+  Parts p = hand;
+  float scale = 60000.0 / product(hand, referenceWord);
+
+  p.dash_ *= scale;
+  p.dot_ *= scale;
+  p.symbolGap_ *= scale;
+  p.characterGap_ *= scale;
+  p.wordGap_ *= scale;
+
+  return p;
+}
+
+} // namespace morse
+} // namespace swirly
+# 4 "sketches/morse/morse.h.in" 2
+# 1 "./src/swirly/morse/SymbolString.cpp" 1
+
 # 1 "./src/swirly/base/ArraySize.h" 1
 // Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -163,7 +343,7 @@ Character CHARACTERS[] = {
 
 } // namespace
 
-const char* findSymbolString(char ch) {
+const char* symbolString(char ch) {
   ch = tolower(ch);
   const Character* begin = CHARACTERS;
   const Character* end = CHARACTERS + (sizeof(ArraySizeHelper(CHARACTERS)));
@@ -190,137 +370,7 @@ const char* findSymbolString(char ch) {
 
 } // namespace morse
 } // namespace swirly
-# 2 "sketches/morse/morse.h.in" 2
-# 1 "./src/swirly/morse/Parts.cpp" 1
-# 1 "./src/swirly/morse/Parts.h" 1
-
-
-
-namespace swirly {
-namespace morse {
-
-struct Parts {
-  int dash_;
-  int dot_;
-  int symbolGap_; // Gap between a dot and a dash
-  int characterGap_; // Gap between two characters.
-  int wordGap_; // Gap between two words.
-
-  // Points to a member of Parts.
-  typedef int Parts::*Pointer;
-
-  // Get a pointer to a part.
-  static Pointer getPart(const char ch);
-
-  // Clear all parts.
-  void clear();
-
-  // Return the total number of parts in a character, a string, or a string that
-  // represents one word.
-  void measure(char);
-  void measure(const char*);
-  void measureWord(const char*);
-
-
-
-
-
-};
-
-} // namespace morse
-} // namespace swirly
-# 2 "./src/swirly/morse/Parts.cpp" 2
-
-
-namespace swirly {
-namespace morse {
-
-Parts::Pointer getPart(char ch) {
-  if (ch == '.')
-    return &Parts::dot_;
-
-  if (ch == '-')
-    return &Parts::dash_;
-
-  if (ch)
-    return &Parts::symbolGap_;
-
-  else
-    return &Parts::characterGap_;
-}
-
-void Parts::clear() {
-  dash_ = dot_ = symbolGap_ = characterGap_ = wordGap_ = 0;
-}
-
-void Parts::measure(const char* s) {
-  for (; *s; ++s)
-    measure(*s);
-}
-
-void Parts::measureWord(const char* s) {
-  measure(s);
-
-  symbolGap_--;
-  wordGap_++;
-}
-
-void Parts::measure(char c) {
-  const char* s = findSymbolString(c);
-  do {
-    (this->*Parts::getPart(*s))++;
-  } while (*(s++));
-}
-# 74 "./src/swirly/morse/Parts.cpp"
-} // namespace morse
-} // namespace swirly
-# 3 "sketches/morse/morse.h.in" 2
-# 1 "./src/swirly/morse/ScaleToWPM.cpp" 1
-# 1 "./src/swirly/morse/ScaleToWPM.h" 1
-
-
-
-
-
-namespace swirly {
-namespace morse {
-
-Parts scaleToWPM(float wpm, const Parts& hand,
-                 const Parts& referenceWordMeasure);
-
-} // namespace morse
-} // namespace swirly
-# 2 "./src/swirly/morse/ScaleToWPM.cpp" 2
-
-
-namespace swirly {
-namespace morse {
-
-static int product(const Parts& x, const Parts& y) {
-  return
-    x.dash_ * y.dash_ +
-    x.dot_ * y.dot_ +
-    x.symbolGap_ * y.symbolGap_ +
-    x.characterGap_ * y.characterGap_ +
-    x.wordGap_ * y.wordGap_;
-}
-
-Parts scaleToWPM(float wpm, const Parts& hand, const Parts& referenceWord) {
-  Parts p = hand;
-  float scale = 60000.0 / product(hand, referenceWord);
-
-  p.dash_ *= scale;
-  p.dot_ *= scale;
-  p.symbolGap_ *= scale;
-  p.characterGap_ *= scale;
-  p.wordGap_ *= scale;
-
-  return p;
-}
-
-} // namespace morse
-} // namespace swirly
-# 4 "sketches/morse/morse.h.in" 2
+# 5 "sketches/morse/morse.h.in" 2
 
 extern "C" void setup() {
 }

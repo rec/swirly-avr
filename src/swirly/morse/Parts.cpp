@@ -35,7 +35,7 @@ void Parts::measureWord(const char* s) {
 }
 
 void Parts::measure(char c) {
-  const char* s = findSymbolString(c);
+  const char* s = symbolString(c);
   do {
     (this->*Parts::getPart(*s))++;
   } while (*(s++));
