@@ -3,6 +3,9 @@
 
 #include "morse.h"
 
+int NOTE = 1760;
+bool LIGHT = true;
+
 swirly::morse::Player player("Hello, Jomar");
 
 void setup() {
@@ -10,11 +13,20 @@ void setup() {
 }
 
 void loop() {
-  digitalWrite(13, HIGH);
-  delay(player.delay());
-  player.advance();
+  if (LIGHT) {
+    digitalWrite(13, HIGH);
+    delay(player.delay());
+  } else {
+    tone(9, NOTE, player.delay());
+  }
 
-  digitalWrite(13, LOW);
+  player.advance();
+  if (LIGHT) {
+    digitalWrite(13, LOW);
+  }
   delay(player.delay());
+  if (!LIGHT) {
+    noTone(9);
+  }
   player.advance();
 }

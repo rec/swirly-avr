@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
             << " wordGap_ = " << t.wordGap_
             << "\n";
 
-  std::cout << "scale: " << player.scale() << "\n"\;
+  std::cout << "scale: " << player.scale() << "\n";
 
   do {
     std::cout << "Player: "
