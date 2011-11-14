@@ -7,29 +7,27 @@
 namespace swirly {
 namespace morse {
 
-struct Player {
+class Player {
+ public:
   Player(const char* msg) : message_(msg) { start(); }
 
+  void advance() {
+    isOn_ = !isOn_;
+    if (*symbol_)
+      ++symbol_;
+    else if (*character_)
+      symbol_ = symbolString(*++character_);
+    else
+      start();
+  }
+
+  char symbol() const { return *symbol_; }
+
+ private:
   void start() {
     isOn_ = true;
     character_ = message_;
     symbol_ = symbolString(*character_);
-  }
-
-  int getTime(const Parts& timing) const {
-    return *(timing.getPart(*symbol_));
-  }
-
-  void advance() {
-    isOn_ = !isOn_;
-    if (*symbol_) {
-      symbol_++;
-    } else if (*character_) {
-      ++character_;
-      symbol_ = symbolString(*character_);
-    } else {
-      start();
-    }
   }
 
   bool isOn_;
@@ -38,6 +36,11 @@ struct Player {
   const char* symbol_;
 };
 
+#if 0
+  int getPart(const Parts& parts) const {
+    return *(parts.getPart(*symbol_));
+  }
+#endif
 
 }  // namespace morse
 }  // namespace swirly

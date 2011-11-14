@@ -30,10 +30,8 @@ struct Parts {
   void measure(const char*);
   void measureWord(const char*);
 
-
-
-
-
+  static Parts getDefault();
+  static Parts getReferenceWordMeasure();
 };
 
 } // namespace morse
@@ -104,7 +102,25 @@ void Parts::measure(char c) {
     (*getPart(*s))++;
   } while (*(s++));
 }
-# 85 "./src/swirly/morse/Parts.cpp"
+
+Parts Parts::getDefault() {
+  Parts p;
+
+  p.dot_ = 1;
+  p.dash_ = 3;
+  p.symbolGap_ = 1;
+  p.characterGap_ = 3;
+  p.wordGap_ = 7;
+
+  return p;
+}
+
+Parts Parts::getReferenceWordMeasure() {
+  Parts p;
+  p.measure("PARIS ");
+  return p;
+}
+
 } // namespace morse
 } // namespace swirly
 # 2 "sketches/morse/morse.h.in" 2
@@ -118,29 +134,27 @@ void Parts::measure(char c) {
 namespace swirly {
 namespace morse {
 
-struct Player {
+class Player {
+ public:
   Player(const char* msg) : message_(msg) { start(); }
 
+  void advance() {
+    isOn_ = !isOn_;
+    if (*symbol_)
+      ++symbol_;
+    else if (*character_)
+      symbol_ = symbolString(*++character_);
+    else
+      start();
+  }
+
+  char symbol() const { return *symbol_; }
+
+ private:
   void start() {
     isOn_ = true;
     character_ = message_;
     symbol_ = symbolString(*character_);
-  }
-
-  int getTime(const Parts& timing) const {
-    return *(timing.getPart(*symbol_));
-  }
-
-  void advance() {
-    isOn_ = !isOn_;
-    if (*symbol_) {
-      symbol_++;
-    } else if (*character_) {
-      ++character_;
-      symbol_ = symbolString(*character_);
-    } else {
-      start();
-    }
   }
 
   bool isOn_;
@@ -150,10 +164,37 @@ struct Player {
 };
 
 
+
+
+
+
+
 } // namespace morse
 } // namespace swirly
 # 3 "sketches/morse/morse.h.in" 2
-# 1 "./src/swirly/morse/ScaleToWPM.cpp" 1
+# 1 "./src/swirly/morse/PlayerTimer.h" 1
+
+
+
+# 1 "./src/swirly/base/base.h" 1
+
+
+
+// Macros to disallow various class methods that C++ unfortunately creates
+// automatically.  Place either one of these in the private: section of your
+// class.
+
+// A macro to disallow the copy constructor and operator= functions.
+
+
+
+
+// A macro to disallow the default constructor, copy constructor and operator=
+// functions.
+# 5 "./src/swirly/morse/PlayerTimer.h" 2
+
+# 1 "./src/swirly/morse/Player.h" 1
+# 7 "./src/swirly/morse/PlayerTimer.h" 2
 # 1 "./src/swirly/morse/ScaleToWPM.h" 1
 
 
@@ -168,7 +209,44 @@ float scaleToWPM(float wpm, const Parts& hand,
 
 } // namespace morse
 } // namespace swirly
-# 2 "./src/swirly/morse/ScaleToWPM.cpp" 2
+# 8 "./src/swirly/morse/PlayerTimer.h" 2
+
+namespace swirly {
+namespace morse {
+
+class PlayerTimer {
+ public:
+  PlayerTimer(const char* m, float wpm = 20.0)
+      : player_(m), timing_(Parts::getDefault()) {
+    setWPM(wpm);
+  }
+
+  void setWPM(float wpm) {
+    static Parts ref = Parts::getReferenceWordMeasure();
+    scale_ = scaleToWPM(wpm, timing_, ref);
+  }
+
+  void advance() {
+    player_.advance();
+  }
+
+  int getTiming() {
+    return static_cast<int>(scale_ * (*timing_.getPart(player_.symbol())));
+  }
+
+ private:
+  Player player_;
+  Parts timing_;
+  float scale_;
+
+  PlayerTimer(const PlayerTimer&); void operator=(const PlayerTimer&);
+};
+
+} // namespace morse
+} // namespace swirly
+# 4 "sketches/morse/morse.h.in" 2
+# 1 "./src/swirly/morse/ScaleToWPM.cpp" 1
+
 
 
 namespace swirly {
@@ -194,7 +272,7 @@ float scaleToWPM(float wpm, const Parts& hand, const Parts& referenceWord) {
 
 } // namespace morse
 } // namespace swirly
-# 4 "sketches/morse/morse.h.in" 2
+# 5 "sketches/morse/morse.h.in" 2
 # 1 "./src/swirly/morse/SymbolString.cpp" 1
 
 # 1 "./src/swirly/base/ArraySize.h" 1
@@ -370,6 +448,6 @@ const char* symbolString(char ch) {
 
 } // namespace morse
 } // namespace swirly
-# 5 "sketches/morse/morse.h.in" 2
+# 6 "sketches/morse/morse.h.in" 2
 
 const char* message = "Hello JoMar";

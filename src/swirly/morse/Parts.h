@@ -24,10 +24,8 @@ struct Parts {
   void measure(const char*);
   void measureWord(const char*);
 
-#if 0
-  static const Parts& getDefault();
-  static const Parts& getReferenceWordMeasure();
-#endif
+  static Parts getDefault();
+  static Parts getReferenceWordMeasure();
 };
 
 }  // namespace morse

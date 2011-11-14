@@ -52,8 +52,7 @@ void Parts::measure(char c) {
   } while (*(s++));
 }
 
-#if 0
-Parts doGetDefault() {
+Parts Parts::getDefault() {
   Parts p;
 
   p.dot_ = 1;
@@ -65,22 +64,11 @@ Parts doGetDefault() {
   return p;
 }
 
-Parts doGetReferenceWordMeasure() {
+Parts Parts::getReferenceWordMeasure() {
   Parts p;
   p.measure("PARIS ");
   return p;
 }
 
-Parts Parts::getDefault() {
-  static Parts p = doGetDefault();
-  return p;
-}
-
-Parts Parts::getReferenceWordMeasure() {
-  static Parts p = doGetReferenceWordMeasure();
-  return p;
-}
-
-#endif
 }  // namespace morse
 }  // namespace swirly
