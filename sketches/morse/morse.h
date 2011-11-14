@@ -141,6 +141,11 @@ class Player {
   float delay();
   bool advance();
 
+  const Parts& timing() const { return timing_; }
+  const char* character() const { return character_; }
+  const char* symbol() const { return symbol_; }
+  float scale() const { return scale_; }
+
  private:
   void start();
 
@@ -200,13 +205,13 @@ bool Player::advance() {
   isOn_ = !isOn_;
   if (*symbol_) {
     ++symbol_;
-    return false;
+    return true;
   } else if (*(character_++)) {
     getSymbol();
-    return false;
+    return true;
   } else {
     start();
-    return true;
+    return false;
   }
 }
 

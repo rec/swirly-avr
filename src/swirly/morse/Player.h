@@ -15,6 +15,11 @@ class Player {
   float delay();
   bool advance();
 
+  const Parts& timing() const { return timing_; }
+  const char* character() const { return character_; }
+  const char* symbol() const { return symbol_; }
+  float scale() const { return scale_; }
+
  private:
   void start();
 
