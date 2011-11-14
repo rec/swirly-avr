@@ -9,38 +9,27 @@ namespace morse {
 
 class Player {
  public:
-  Player(const char* msg) : message_(msg) { start(); }
+  Player(const char* msg, float wpm = 10.0);
 
-  void advance() {
-    isOn_ = !isOn_;
-    if (*symbol_)
-      ++symbol_;
-    else if (*character_)
-      symbol_ = symbolString(*++character_);
-    else
-      start();
-  }
-
-  char symbol() const { return *symbol_; }
+  void setWPM(float wpm);
+  float delay();
+  bool advance();
 
  private:
-  void start() {
-    isOn_ = true;
-    character_ = message_;
-    symbol_ = symbolString(*character_);
-  }
+  void start();
 
+  void getSymbol();
   bool isOn_;
+  bool isEndOfWord_;
+  float scale_;
+
   const char* message_;
   const char* character_;
   const char* symbol_;
-};
 
-#if 0
-  int getPart(const Parts& parts) const {
-    return *(parts.getPart(*symbol_));
-  }
-#endif
+  Parts timing_;
+  Parts reference_;
+};
 
 }  // namespace morse
 }  // namespace swirly

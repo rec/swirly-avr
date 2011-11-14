@@ -18,17 +18,16 @@ struct Parts {
   int wordGap_; // Gap between two words.
 
   // Get a pointer to a part.
-  int* getPart(char);
-  const int* getPart(char) const;
+  int* getPart(char, bool endOfWord);
+  const int* getPart(char, bool endOfWord) const;
 
   // Clear all parts.
   void clear();
 
   // Return the total number of parts in a character, a string, or a string that
   // represents one word.
-  void measure(char);
-  void measure(const char*);
-  void measureWord(const char*);
+  void measure(char, bool endOfWord);
+  void measure(const char*, bool endOfWord);
 
   static Parts getDefault();
   static Parts getReferenceWordMeasure();
@@ -58,7 +57,7 @@ namespace morse {
 // Points to a member of Parts.
 typedef int Parts::*PartPointer;
 
-PartPointer getPartPointer(char ch) {
+PartPointer getPartPointer(char ch, bool endOfWord) {
   if (ch == '.')
     return &Parts::dot_;
 
@@ -68,38 +67,34 @@ PartPointer getPartPointer(char ch) {
   if (ch)
     return &Parts::symbolGap_;
 
+  if (endOfWord)
+    return &Parts::wordGap_;
+
   else
     return &Parts::characterGap_;
 }
 
-int* Parts::getPart(char ch) {
-  return &(this->*getPartPointer(ch));
+int* Parts::getPart(char ch, bool endOfWord) {
+  return &(this->*getPartPointer(ch, endOfWord));
 }
 
-const int* Parts::getPart(char ch) const {
-  return &(this->*getPartPointer(ch));
+const int* Parts::getPart(char ch, bool endOfWord) const {
+  return &(this->*getPartPointer(ch, endOfWord));
 }
 
 void Parts::clear() {
   dash_ = dot_ = symbolGap_ = characterGap_ = wordGap_ = 0;
 }
 
-void Parts::measure(const char* s) {
+void Parts::measure(const char* s, bool endOfWord) {
   for (; *s; ++s)
-    measure(*s);
+    measure(*s, endOfWord);
 }
 
-void Parts::measureWord(const char* s) {
-  measure(s);
-
-  symbolGap_--;
-  wordGap_++;
-}
-
-void Parts::measure(char c) {
+void Parts::measure(char c, bool endOfWord) {
   const char* s = symbolString(c);
   do {
-    (*getPart(*s))++;
+    (*getPart(*s, endOfWord))++;
   } while (*(s++));
 }
 
@@ -119,7 +114,7 @@ Parts Parts::getReferenceWordMeasure() {
   Parts p;
 
   p.clear();
-  p.measureWord("PARIS");
+  p.measure("PARIS", true);
 
   return p;
 }
@@ -127,6 +122,7 @@ Parts Parts::getReferenceWordMeasure() {
 } // namespace morse
 } // namespace swirly
 # 2 "sketches/morse/morse.h.in" 2
+# 1 "./src/swirly/morse/Player.cpp" 1
 # 1 "./src/swirly/morse/Player.h" 1
 
 
@@ -139,65 +135,31 @@ namespace morse {
 
 class Player {
  public:
-  Player(const char* msg) : message_(msg) { start(); }
+  Player(const char* msg, float wpm = 10.0);
 
-  void advance() {
-    isOn_ = !isOn_;
-    if (*symbol_)
-      ++symbol_;
-    else if (*character_)
-      symbol_ = symbolString(*++character_);
-    else
-      start();
-  }
-
-  char symbol() const { return *symbol_; }
+  void setWPM(float wpm);
+  float delay();
+  bool advance();
 
  private:
-  void start() {
-    isOn_ = true;
-    character_ = message_;
-    symbol_ = symbolString(*character_);
-  }
+  void start();
 
+  void getSymbol();
   bool isOn_;
+  bool isEndOfWord_;
+  float scale_;
+
   const char* message_;
   const char* character_;
   const char* symbol_;
+
+  Parts timing_;
+  Parts reference_;
 };
-
-
-
-
-
-
 
 } // namespace morse
 } // namespace swirly
-# 3 "sketches/morse/morse.h.in" 2
-# 1 "./src/swirly/morse/PlayerTimer.h" 1
-
-
-
-# 1 "./src/swirly/base/base.h" 1
-
-
-
-// Macros to disallow various class methods that C++ unfortunately creates
-// automatically.  Place either one of these in the private: section of your
-// class.
-
-// A macro to disallow the copy constructor and operator= functions.
-
-
-
-
-// A macro to disallow the default constructor, copy constructor and operator=
-// functions.
-# 5 "./src/swirly/morse/PlayerTimer.h" 2
-
-# 1 "./src/swirly/morse/Player.h" 1
-# 7 "./src/swirly/morse/PlayerTimer.h" 2
+# 2 "./src/swirly/morse/Player.cpp" 2
 # 1 "./src/swirly/morse/ScaleToWPM.h" 1
 
 
@@ -212,42 +174,61 @@ float scaleToWPM(float wpm, const Parts& hand,
 
 } // namespace morse
 } // namespace swirly
-# 8 "./src/swirly/morse/PlayerTimer.h" 2
+# 3 "./src/swirly/morse/Player.cpp" 2
 
 namespace swirly {
 namespace morse {
 
-class PlayerTimer {
- public:
-  PlayerTimer(const char* m, float wpm = 10.0)
-      : player_(m), timing_(Parts::getDefault()) {
-    setWPM(wpm);
+Player::Player(const char* msg, float wpm)
+    : message_(msg),
+      timing_(Parts::getDefault()),
+      reference_(Parts::getReferenceWordMeasure()) {
+  setWPM(wpm);
+  start();
+}
+
+void Player::setWPM(float wpm) {
+  Parts ref = Parts::getReferenceWordMeasure();
+  scale_ = scaleToWPM(wpm, timing_, ref);
+}
+
+float Player::delay() {
+  return scale_ * (*timing_.getPart(*symbol_, isEndOfWord_));
+}
+
+bool Player::advance() {
+  isOn_ = !isOn_;
+  if (*symbol_) {
+    ++symbol_;
+    return false;
+  } else if (*(character_++)) {
+    getSymbol();
+    return false;
+  } else {
+    start();
+    return true;
   }
+}
 
-  void setWPM(float wpm) {
-    Parts ref = Parts::getReferenceWordMeasure();
-    scale_ = scaleToWPM(wpm, timing_, ref);
-  }
+void Player::start() {
+  isOn_ = true;
+  isEndOfWord_ = false;
+  character_ = message_;
+  getSymbol();
+}
 
-  void advance() {
-    player_.advance();
-  }
-
-  int delay() {
-    return static_cast<int>(scale_ * (*timing_.getPart(player_.symbol())));
-  }
-
- private:
-  Player player_;
-  Parts timing_;
-  float scale_;
-
-  PlayerTimer(const PlayerTimer&); void operator=(const PlayerTimer&);
-};
+void Player::getSymbol() {
+  symbol_ = symbolString(*character_);
+  char c = character_[1];
+  bool isSpace = (c == ' ');
+  isEndOfWord_ = (c == 0 || isSpace);
+  if (isSpace)
+    ++character_;
+}
 
 } // namespace morse
 } // namespace swirly
-# 4 "sketches/morse/morse.h.in" 2
+# 3 "sketches/morse/morse.h.in" 2
 # 1 "./src/swirly/morse/ScaleToWPM.cpp" 1
 
 
@@ -276,7 +257,7 @@ float scaleToWPM(float wpm, const Parts& hand, const Parts& referenceWord) {
 
 } // namespace morse
 } // namespace swirly
-# 5 "sketches/morse/morse.h.in" 2
+# 4 "sketches/morse/morse.h.in" 2
 # 1 "./src/swirly/morse/SymbolString.cpp" 1
 
 # 1 "./src/swirly/base/ArraySize.h" 1
@@ -452,6 +433,6 @@ const char* symbolString(char ch) {
 
 } // namespace morse
 } // namespace swirly
-# 6 "sketches/morse/morse.h.in" 2
+# 5 "sketches/morse/morse.h.in" 2
 
 const char* message = "Hello JoMar";

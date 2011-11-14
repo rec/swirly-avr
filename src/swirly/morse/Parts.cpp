@@ -7,7 +7,7 @@ namespace morse {
 // Points to a member of Parts.
 typedef int Parts::*PartPointer;
 
-PartPointer getPartPointer(char ch) {
+PartPointer getPartPointer(char ch, bool endOfWord) {
   if (ch == '.')
     return &Parts::dot_;
 
@@ -17,38 +17,34 @@ PartPointer getPartPointer(char ch) {
   if (ch)
     return &Parts::symbolGap_;
 
+  if (endOfWord)
+    return &Parts::wordGap_;
+
   else
     return &Parts::characterGap_;
 }
 
-int* Parts::getPart(char ch) {
-  return &(this->*getPartPointer(ch));
+int* Parts::getPart(char ch, bool endOfWord) {
+  return &(this->*getPartPointer(ch, endOfWord));
 }
 
-const int* Parts::getPart(char ch) const {
-  return &(this->*getPartPointer(ch));
+const int* Parts::getPart(char ch, bool endOfWord) const {
+  return &(this->*getPartPointer(ch, endOfWord));
 }
 
 void Parts::clear() {
   dash_ = dot_ = symbolGap_ = characterGap_ = wordGap_ = 0;
 }
 
-void Parts::measure(const char* s) {
+void Parts::measure(const char* s, bool endOfWord) {
   for (; *s; ++s)
-    measure(*s);
+    measure(*s, endOfWord);
 }
 
-void Parts::measureWord(const char* s) {
-  measure(s);
-
-  symbolGap_--;
-  wordGap_++;
-}
-
-void Parts::measure(char c) {
+void Parts::measure(char c, bool endOfWord) {
   const char* s = symbolString(c);
   do {
-    (*getPart(*s))++;
+    (*getPart(*s, endOfWord))++;
   } while (*(s++));
 }
 
@@ -68,7 +64,7 @@ Parts Parts::getReferenceWordMeasure() {
   Parts p;
 
   p.clear();
-  p.measureWord("PARIS");
+  p.measure("PARIS", true);
 
   return p;
 }

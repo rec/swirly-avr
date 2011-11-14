@@ -9,10 +9,10 @@
 #include "morse/morse.h"
 
 int main(int argc, char** argv) {
-  swirly::morse::PlayerTimer playerTimer("Hello, Jomar");
+  swirly::morse::Player player("Hello, Jomar");
   for (int i = 0; i < 20; ++i) {
-    printf("%d, ", playerTimer.delay());
-    playerTimer.advance();
+    printf("%d, ", static_cast<int>(player.delay()));
+   player.advance();
   }
   printf("\n");
 }
