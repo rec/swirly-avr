@@ -1,3 +1,3 @@
 .i
-# *.bin
-# *.bin.dSYM/
+*.bin
+*.bin.dSYM/
