@@ -1,10 +1,21 @@
-#include "swirly/morse/Character.h"
+#include "swirly/morse/SymbolString.h"
 #include "swirly/base/ArraySize.h"
 
 namespace swirly {
 namespace morse {
 
-static Character CHARACTERS[] = {
+namespace {
+
+// The definition of a single Morse character.
+struct Character {
+  // The actual ASCII character, in lower case.
+  char char_;
+
+  // A string of symbols from "-", "." and " " (for readability.)
+  const char* symbols_;
+};
+
+Character CHARACTERS[] = {
   {'!', "- . - . - -"},
   {'"', ". - . . - ."},
   {'$', ". . . - . . -"},
@@ -61,23 +72,25 @@ static Character CHARACTERS[] = {
   {'z', "- - . ."},
 };
 
-const Character* Character::find(char ch) {
+}  // namespace
+
+const char* findSymbolString(char ch) {
   ch = tolower(ch);
   const Character* begin = CHARACTERS;
   const Character* end = CHARACTERS + arraysize(CHARACTERS);
   if (begin->char_ < ch || end->char_ > ch)
-    return NULL;
+    return "";
 
   while (true) {
     if (begin->char_ == ch)
-      return begin;
+      return begin->symbols_;
 
     if (end->char_ == ch)
-      return end;
+      return end->symbols_;
 
     const Character* diff = begin + (end - begin) / 2;
     if (diff == begin || diff == end)
-      return NULL;
+      return "";
 
     if (diff->char_ < ch)
       begin = diff;

@@ -1,20 +1,21 @@
 #include "swirly/morse/Parts.h"
-#include "swirly/morse/CharacterPosition.h"
+#include "swirly/morse/SymbolString.h"
 
 namespace swirly {
 namespace morse {
 
-Parts::Pointer getPart(const CharacterPosition& cp, bool isEndOfWord) {
-  if (cp.isDot())
+Parts::Pointer getPart(char ch) {
+  if (ch == '.')
     return &Parts::dot_;
 
-  if (cp.isDash())
+  if (ch == '-')
     return &Parts::dash_;
 
-  if (!cp.isEnd())
+  if (ch)
     return &Parts::symbolGap_;
 
-  return &Parts::characterGap_;
+  else
+    return &Parts::characterGap_;
 }
 
 void Parts::clear() {
@@ -28,19 +29,18 @@ void Parts::measure(const char* s) {
 
 void Parts::measureWord(const char* s) {
   measure(s);
+
   symbolGap_--;
   wordGap_++;
 }
 
 void Parts::measure(char c) {
-  if (const Character* ch = Character::find(c)) {
-    CharacterPosition cp(ch);
-    do {
-      ++(this->*Parts::getPart(cp));
-      cp.pos_++;
-    } while (!cp.isEnd());
-  }
+  const char* s = findSymbolString(c);
+  do {
+    (this->*Parts::getPart(*s))++;
+  } while (*(s++));
 }
+
 #if 0
 Parts doGetDefault() {
   Parts p;

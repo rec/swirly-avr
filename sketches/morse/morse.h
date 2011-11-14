@@ -2,29 +2,21 @@
 # 1 "<built-in>"
 # 1 "<command-line>"
 # 1 "sketches/morse/morse.h.in"
-# 1 "./src/swirly/morse/Character.cpp" 1
-# 1 "./src/swirly/morse/Character.h" 1
+# 1 "./src/swirly/morse/SymbolString.cpp" 1
+# 1 "./src/swirly/morse/SymbolString.h" 1
 
 
 
 namespace swirly {
 namespace morse {
 
-// The definition of a single Morse character.
-struct Character {
-  // The actual ASCII character, in lower case.
-  char char_;
-
-  // A string of symbols from "-", "." and " " (for readability.)
-  const char* symbols_;
-
-  int length() const { return strlen(symbols_); }
-  static const Character* find(char ch);
-};
+// Finds the symbol string corresponding to the Morse character, or the empty
+// string if it is not a valid Morse.
+const char* findSymbolString(char);
 
 } // namespace morse
 } // namespace swirly
-# 2 "./src/swirly/morse/Character.cpp" 2
+# 2 "./src/swirly/morse/SymbolString.cpp" 2
 # 1 "./src/swirly/base/ArraySize.h" 1
 // Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -96,12 +88,23 @@ char (&ArraySizeHelper(const TypeName (&array)[N]))[N];
 // size.  Since all our code has to go through a 32-bit compiler,
 // where a pointer is 4 bytes, this means all pointers to a type whose
 // size is 3 or greater than 4 will be (righteously) rejected.
-# 3 "./src/swirly/morse/Character.cpp" 2
+# 3 "./src/swirly/morse/SymbolString.cpp" 2
 
 namespace swirly {
 namespace morse {
 
-static Character CHARACTERS[] = {
+namespace {
+
+// The definition of a single Morse character.
+struct Character {
+  // The actual ASCII character, in lower case.
+  char char_;
+
+  // A string of symbols from "-", "." and " " (for readability.)
+  const char* symbols_;
+};
+
+Character CHARACTERS[] = {
   {'!', "- . - . - -"},
   {'"', ". - . . - ."},
   {'$', ". . . - . . -"},
@@ -158,23 +161,25 @@ static Character CHARACTERS[] = {
   {'z', "- - . ."},
 };
 
-const Character* Character::find(char ch) {
+} // namespace
+
+const char* findSymbolString(char ch) {
   ch = tolower(ch);
   const Character* begin = CHARACTERS;
   const Character* end = CHARACTERS + (sizeof(ArraySizeHelper(CHARACTERS)));
   if (begin->char_ < ch || end->char_ > ch)
-    return NULL;
+    return "";
 
   while (true) {
     if (begin->char_ == ch)
-      return begin;
+      return begin->symbols_;
 
     if (end->char_ == ch)
-      return end;
+      return end->symbols_;
 
     const Character* diff = begin + (end - begin) / 2;
     if (diff == begin || diff == end)
-      return NULL;
+      return "";
 
     if (diff->char_ < ch)
       begin = diff;
@@ -194,8 +199,6 @@ const Character* Character::find(char ch) {
 namespace swirly {
 namespace morse {
 
-class CharacterPosition;
-
 struct Parts {
   int dash_;
   int dot_;
@@ -207,7 +210,7 @@ struct Parts {
   typedef int Parts::*Pointer;
 
   // Get a pointer to a part.
-  static Pointer getPart(const CharacterPosition&);
+  static Pointer getPart(const char ch);
 
   // Clear all parts.
   void clear();
@@ -227,55 +230,23 @@ struct Parts {
 } // namespace morse
 } // namespace swirly
 # 2 "./src/swirly/morse/Parts.cpp" 2
-# 1 "./src/swirly/morse/CharacterPosition.h" 1
-
-
-
-// #include <ctype.h>
-// #include <string.h>
-
 
 
 namespace swirly {
 namespace morse {
 
-// A position within a Character during playback.
-// position = 0 means the period in the first symbol
-// position = 1 means the gap after the first symbol.
-// position = 2 means during the second symbol, etc.
-
-struct CharacterPosition {
-  const Character* char_;
-  int pos_;
-
-  CharacterPosition() {}
-  CharacterPosition(const Character* c, int p = 0) : char_(c), pos_(p) {}
-
-  char get() const { return char_->symbols_[pos_]; }
-  int length() const { return char_->length(); }
-  bool isDot() const { return get() == '.'; }
-  bool isDash() const { return get() == '-'; }
-  bool isEnd() const { return !get(); }
-};
-
-} // namespace morse
-} // namespace swirly
-# 3 "./src/swirly/morse/Parts.cpp" 2
-
-namespace swirly {
-namespace morse {
-
-Parts::Pointer getPart(const CharacterPosition& cp, bool isEndOfWord) {
-  if (cp.isDot())
+Parts::Pointer getPart(char ch) {
+  if (ch == '.')
     return &Parts::dot_;
 
-  if (cp.isDash())
+  if (ch == '-')
     return &Parts::dash_;
 
-  if (!cp.isEnd())
+  if (ch)
     return &Parts::symbolGap_;
 
-  return &Parts::characterGap_;
+  else
+    return &Parts::characterGap_;
 }
 
 void Parts::clear() {
@@ -289,18 +260,16 @@ void Parts::measure(const char* s) {
 
 void Parts::measureWord(const char* s) {
   measure(s);
+
   symbolGap_--;
   wordGap_++;
 }
 
 void Parts::measure(char c) {
-  if (const Character* ch = Character::find(c)) {
-    CharacterPosition cp(ch);
-    do {
-      ++(this->*Parts::getPart(cp));
-      cp.pos_++;
-    } while (!cp.isEnd());
-  }
+  const char* s = findSymbolString(c);
+  do {
+    (this->*Parts::getPart(*s))++;
+  } while (*(s++));
 }
 # 74 "./src/swirly/morse/Parts.cpp"
 } // namespace morse

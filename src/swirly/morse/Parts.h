@@ -4,8 +4,6 @@
 namespace swirly {
 namespace morse {
 
-class CharacterPosition;
-
 struct Parts {
   int dash_;
   int dot_;
@@ -17,7 +15,7 @@ struct Parts {
   typedef int Parts::*Pointer;
 
   // Get a pointer to a part.
-  static Pointer getPart(const CharacterPosition&);
+  static Pointer getPart(const char ch);
 
   // Clear all parts.
   void clear();
