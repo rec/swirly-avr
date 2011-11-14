@@ -5,6 +5,7 @@
 
 int NOTE = 1760;
 bool LIGHT = true;
+bool SOUND = false;
 
 swirly::morse::Player player("Hello, Jomar");
 
@@ -15,9 +16,12 @@ void setup() {
 void loop() {
   if (LIGHT) {
     digitalWrite(13, HIGH);
-    delay(player.delay());
-  } else {
+  }
+
+  if (SOUND) {
     tone(9, NOTE, player.delay());
+  } else {
+    delay(player.delay());
   }
 
   player.advance();
@@ -25,7 +29,7 @@ void loop() {
     digitalWrite(13, LOW);
   }
   delay(player.delay());
-  if (!LIGHT) {
+  if (SOUND) {
     noTone(9);
   }
   player.advance();
