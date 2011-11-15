@@ -147,6 +147,8 @@ class Player {
   float scale() const { return scale_; }
   bool isOn() const { return isOn_; }
 
+  void setScale(float scale) { scale_ = scale; }
+
  private:
   void start();
 
