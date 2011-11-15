@@ -43,10 +43,8 @@ class ButtonDebouncer {
       debounce_ = time;
     }
     if ((time - debounce_) > DEBOUNCE_INTERVAL) {
-      if (state_ != reading && state_ == HIGH) {
-        // running = true;
+      if (state_ != reading && state_ == HIGH)
         callback_();
-      }
       state_ = reading;
     }
     lastState_ = reading;
@@ -86,17 +84,6 @@ void button2Press() {
 ButtonDebouncer button1(BUTTON1_PIN, button1Press);
 ButtonDebouncer button2(BUTTON2_PIN, button2Press);
 
-int button1State = HIGH;
-int button1Next = button1State;
-bool button1Debouncing = false;
-long button1Time = 0;
-
-int button2State = HIGH;
-int button2Next = button2State;
-bool button2Debouncing = false;
-long button2Time = 0;
-
-
 void setup() {
   pinMode(LED_PIN, OUTPUT);
   pinMode(BUTTON1_PIN, INPUT);
@@ -115,26 +102,8 @@ int advance(unsigned long time) {
 void loop() {
   unsigned long time = millis();
 
-  if (false) {
-    int state1 = digitalRead(BUTTON1_PIN);
-
-    if (state1 != button1State) {
-      button1State = state1;
-      if (state1 == LOW)
-        button1Press();
-    }
-
-    int state2 = digitalRead(BUTTON2_PIN);
-
-    if (state2 != button2State) {
-      button2State = state2;
-      if (state2 == LOW)
-        button2Press();
-    }
-  } else {
-    button1.read(time);
-    button2.read(time);
-  }
+  button1.read(time);
+  button2.read(time);
 
   if (running) {
     if (time >= nextTime) {
@@ -159,23 +128,3 @@ void loop() {
     digitalWrite(LED_PIN, LOW);
   }
 }
-
-/*
-  } else
-  if (button1Debouncing) {
-    if (time >= button1Time) {
-      // Button was changed!
-      button1State = state;
-      button1Debouncing = false;
-      if (state == LOW)
-        running = !running;
-    }
-  } else  if (state == button1State) {
-    button1Debouncing = false;
-
-  } else {
-    button1Debouncing = true;
-    button1Time = time + DEBOUNCE_INTERVAL;
-    button1State = state;
-  }
-*/
