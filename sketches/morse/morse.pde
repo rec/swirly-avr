@@ -23,40 +23,47 @@ enum LightSound {
   SOUND = 2,
 };
 
-int state = ON_OFF;
 int lightSound = LIGHT;
 
 bool running = false;
-
-int button1State = HIGH;
-int button1Next = button1State;
-bool button1Debouncing = false;
-int button1Time = 0;
-
-int button2State = HIGH;
-int button2Next = button2State;
-bool button2Debouncing = false;
-int button2Time = 0;
+int state = ON_OFF;
 
 int DEBOUNCE_INTERVAL = 50;
 
+typedef void (*Callback)();
+
+class ButtonDebouncer {
+ public:
+  ButtonDebouncer(int p, Callback cb) : pin_(p), state_(HIGH), callback_(cb) {}
+
+  void read(unsigned long time) {
+    int reading = digitalRead(pin_);
+    bool changed = false;
+    if (reading != lastState_) {
+      debounce_ = time;
+    }
+    if ((time - debounce_) > DEBOUNCE_INTERVAL) {
+      if (state_ != reading && state_ == HIGH) {
+        // running = true;
+        callback_();
+      }
+      state_ = reading;
+    }
+    lastState_ = reading;
+  }
+
+  bool high() const { return state_ == HIGH; }
+
+ private:
+  int pin_;
+  int state_;
+  int lastState_;
+  Callback callback_;
+
+  unsigned long debounce_;
+};
 
 swirly::morse::Player player("Hello Jomar");
-
-void setup() {
-  pinMode(LED_PIN, OUTPUT);
-  pinMode(BUTTON1_PIN, INPUT);
-  pinMode(BUTTON2_PIN, INPUT);
-}
-
-unsigned long nextTime = 0;
-
-int advance(unsigned long time) {
-  int delay = player.delay();
-  nextTime = time + delay;
-  player.advance();
-  return delay;
-}
 
 void button1Press() {
   if (state == ON_OFF) {
@@ -76,23 +83,57 @@ void button2Press() {
 }
 
 
+ButtonDebouncer button1(BUTTON1_PIN, button1Press);
+ButtonDebouncer button2(BUTTON2_PIN, button2Press);
+
+int button1State = HIGH;
+int button1Next = button1State;
+bool button1Debouncing = false;
+long button1Time = 0;
+
+int button2State = HIGH;
+int button2Next = button2State;
+bool button2Debouncing = false;
+long button2Time = 0;
+
+
+void setup() {
+  pinMode(LED_PIN, OUTPUT);
+  pinMode(BUTTON1_PIN, INPUT);
+  pinMode(BUTTON2_PIN, INPUT);
+}
+
+unsigned long nextTime = 0;
+
+int advance(unsigned long time) {
+  unsigned long delay = player.delay();
+  nextTime = time + delay;
+  player.advance();
+  return delay;
+}
+
 void loop() {
   unsigned long time = millis();
 
-  int state1 = digitalRead(BUTTON1_PIN);
+  if (false) {
+    int state1 = digitalRead(BUTTON1_PIN);
 
-  if (state1 != button1State) {
-    button1State = state1;
-    if (state1 == LOW)
-      button1Press();
-  }
+    if (state1 != button1State) {
+      button1State = state1;
+      if (state1 == LOW)
+        button1Press();
+    }
 
-  int state2 = digitalRead(BUTTON2_PIN);
+    int state2 = digitalRead(BUTTON2_PIN);
 
-  if (state2 != button2State) {
-    button2State = state2;
-    if (state2 == LOW)
-      button2Press();
+    if (state2 != button2State) {
+      button2State = state2;
+      if (state2 == LOW)
+        button2Press();
+    }
+  } else {
+    button1.read(time);
+    button2.read(time);
   }
 
   if (running) {
